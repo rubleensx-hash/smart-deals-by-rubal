@@ -4,107 +4,77 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Smart Deals by Rubal — Review Finder</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>Smart Deals by Rubal</title>
 
 <style>
 
 body{
-font-family:Poppins;
+font-family:Arial;
 background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 margin:0;
+color:white;
 }
 
-.container{
-background:#0b0f19;
+.box{
+background:#0b1220;
 padding:30px;
 border-radius:15px;
-width:420px;
-box-shadow:0 0 30px rgba(0,255,255,0.2);
-}
-
-h1{
+width:400px;
 text-align:center;
-margin-bottom:10px;
-}
-
-.contact{
-text-align:center;
-color:#00ffd5;
-margin-bottom:20px;
 }
 
 input{
 width:100%;
 padding:12px;
-margin:8px 0;
+margin:10px 0;
 border-radius:8px;
 border:none;
 background:#141a29;
 color:white;
-font-size:15px;
 }
 
 button{
 width:100%;
 padding:12px;
-margin-top:10px;
+background:linear-gradient(90deg,#00ffd5,#00bfff);
 border:none;
 border-radius:8px;
-font-size:16px;
-font-weight:600;
+font-weight:bold;
 cursor:pointer;
 }
 
-.fetch{
-background:linear-gradient(90deg,#00ffd5,#00bfff);
-color:black;
-}
-
-.result{
+#result{
 margin-top:15px;
 background:#141a29;
 padding:10px;
 border-radius:8px;
-word-break:break-all;
-}
-
-.status{
-margin-top:10px;
-color:#00ffd5;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
 
-<h1>SMART DEALS BY RUBAL</h1>
+<h2>SMART DEALS BY RUBAL</h2>
 
-<div class="contact">
-Flipkart Review Finder<br>
-Contact: 7006188569
-</div>
+<p>Contact: 7006188569</p>
 
-<input id="name" placeholder="Enter Buyer Name">
+<input id="name" placeholder="Buyer Name">
 
-<input id="link" placeholder="Paste Flipkart Product Link">
+<input id="link" placeholder="Flipkart Product Link">
 
-<button class="fetch" onclick="findReview()">
+<button id="fetchBtn">
 Fetch Review Permalink
 </button>
 
-<div class="status" id="status"></div>
-
-<div class="result" id="result">
+<div id="result">
 Permalink will appear here
 </div>
 

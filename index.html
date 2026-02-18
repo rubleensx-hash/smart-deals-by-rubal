@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Deals by Rubal - Flipkart Review Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+body{
+margin:0;
+font-family:Poppins;
+background:linear-gradient(135deg,#000428,#004e92);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+.card{
+background:#0d1117;
+padding:30px;
+border-radius:15px;
+width:400px;
+text-align:center;
+box-shadow:0 0 30px rgba(0,255,255,0.3);
+}
+.logo{
+font-size:28px;
+font-weight:700;
+color:#00ffa6;
+}
+.subtitle{
+color:#aaa;
+margin-bottom:20px;
+}
+.contact{
+color:#00ffa6;
+font-size:14px;
+margin-bottom:20px;
+}
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border-radius:8px;
+border:none;
+background:#161b22;
+color:white;
+}
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+font-weight:600;
+cursor:pointer;
+}
+.find{background:#00ffa6;color:black;}
+.copy{background:#ff9800;color:black;}
+.open{background:#2196f3;color:white;}
+.result{
+margin-top:15px;
+word-break:break-all;
+color:#00ffa6;
+}
+.footer{
+margin-top:20px;
+font-size:12px;
+color:#666;
+}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="logo">SMART DEALS BY RUBAL</div>
+<div class="subtitle">Flipkart Review Permalink Finder</div>
+<div class="contact">Contact: 7006188569</div>
+<input id="product" placeholder="Paste Flipkart Product Link">
+<input id="name" placeholder="Enter Buyer Name">
+<button class="find" onclick="findReview()">Find Review Permalink</button>
+<button class="copy" onclick="copyLink()">Copy Permalink</button>
+<button class="open" onclick="openLink()">Open Review</button>
+<div class="result" id="result">Permalink will appear here</div>
+<div class="footer">© Smart Deals by Rubal</div>
+</div>
+<script>
+let currentLink="";
+async function findReview(){
+let product=document.getElementById("product").value;
+let name=document.getElementById("name").value;
+document.getElementById("result").innerText="Searching...";
+let res=await fetch("/find",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({productLink:product,buyerName:name})
+});
+let data=await res.json();
+if(data.success){
+currentLink=data.permalink;
+document.getElementById("result").innerText=data.permalink;
+}else{
+document.getElementById("result").innerText="Review not found";
+}
+}
+function copyLink(){
+if(currentLink){
+navigator.clipboard.writeText(currentLink);
+alert("Copied");
+}
+}
+function openLink(){
+if(currentLink){
+window.open(currentLink);
+}
+}
+</script>
+</body>
+</html>

@@ -1,78 +1,41 @@
-async function findReview(){
+document.getElementById("fetchBtn").addEventListener("click", async function(){
 
-const name = document.getElementById("name").value.trim().toLowerCase();
+const name = document.getElementById("name").value.toLowerCase();
+
 const link = document.getElementById("link").value;
 
-const status = document.getElementById("status");
 const result = document.getElementById("result");
 
-result.innerHTML="";
-status.innerHTML="Scanning reviews...";
+result.innerHTML="Scanning...";
 
 let pidMatch = link.match(/pid=([A-Z0-9]+)/);
 
 if(!pidMatch){
 
-let shortMatch = link.match(/\/p\/.*\/([A-Z0-9]{16})/);
+result.innerHTML="PID not found in link";
 
-if(shortMatch){
-pidMatch=[null,shortMatch[1]];
-}
-
-}
-
-if(!pidMatch){
-
-status.innerHTML="Invalid product link";
 return;
 
 }
 
 let pid = pidMatch[1];
 
-let found=false;
+for(let i=1;i<=100;i++){
 
-for(let i=1;i<=200;i++){
-
-status.innerHTML="Scanning review "+i;
-
-let reviewUrl=`https://www.flipkart.com/reviews/${pid}:${i}`;
+let reviewLink = `https://www.flipkart.com/reviews/${pid}:${i}`;
 
 try{
 
-let response = await fetch(reviewUrl);
+let res = await fetch(reviewLink);
 
-if(response.ok){
-
-if(name===""){
-
-result.innerHTML=reviewUrl;
-
-status.innerHTML="Permalink found";
-
-window.open(reviewUrl,"_blank");
-
-found=true;
-
-break;
-
-}
-
-let text = await response.text();
+let text = await res.text();
 
 if(text.toLowerCase().includes(name)){
 
-result.innerHTML=reviewUrl;
+result.innerHTML =
+`<a href="${reviewLink}" target="_blank">${reviewLink}</a>`;
 
-status.innerHTML="Review found";
-
-window.open(reviewUrl,"_blank");
-
-found=true;
-
-break;
-
-}
+return;
 
 }
 
@@ -80,10 +43,6 @@ break;
 
 }
 
-if(!found){
+result.innerHTML="Review not found";
 
-status.innerHTML="Review not found in first 200";
-
-}
-
-}
+});

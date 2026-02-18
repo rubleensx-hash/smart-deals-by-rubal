@@ -8,16 +8,50 @@ const result = document.getElementById("result");
 
 result.innerHTML="Scanning fast...";
 
-let pidMatch = link.match(/pid=([A-Z0-9]+)/);
+let pid = null;
 
-if(!pidMatch){
+// Try method 1: extract pid=
+let match = link.match(/pid=([A-Z0-9]+)/);
+
+if(match){
+pid = match[1];
+}
+
+// Try method 2: extract from /p/
+if(!pid){
+
+let match2 = link.match(/\/p\/([a-zA-Z0-9]+)/);
+
+if(match2){
+
+result.innerHTML="Extracting PID...";
+
+try{
+
+let res = await fetch(link);
+
+let text = await res.text();
+
+let pidMatch = text.match(/\"productId\":\"([A-Z0-9]+)\"/);
+
+if(pidMatch){
+
+pid = pidMatch[1];
+
+}
+
+}catch(e){}
+
+}
+
+}
+
+if(!pid){
 
 result.innerHTML="Invalid product link";
 return;
 
 }
-
-let pid = pidMatch[1];
 
 let found = false;
 
@@ -47,7 +81,7 @@ result.innerHTML =
 
 }
 
-let promises = [];
+let promises=[];
 
 for(let i=1;i<=100;i++){
 

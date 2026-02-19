@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Smart Deals by Rubal - Flipkart Review Finder</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.container{
+    background:#0b132b;
+    padding:30px;
+    border-radius:15px;
+    width:90%;
+    max-width:420px;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+
+.title{
+    color:white;
+    font-size:24px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.contact{
+    color:#00ffd5;
+    text-align:center;
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:none;
+    border-radius:8px;
+    background:#1c2541;
+    color:white;
+    font-size:15px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(90deg,#00ffd5,#00aaff);
+    color:black;
+    font-weight:bold;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+.result{
+    margin-top:15px;
+    padding:12px;
+    background:#1c2541;
+    border-radius:8px;
+    color:white;
+    text-align:center;
+    word-wrap:break-word;
+}
+
+.success{
+    color:#00ff9c;
+}
+
+.error{
+    color:#ff5e5e;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<div class="title">SMART DEALS BY RUBAL</div>
+
+<div class="contact">
+Flipkart Review Finder<br>
+Contact: 7006188569
+</div>
+
+<input type="text" id="name" placeholder="Enter reviewer name">
+
+<input type="text" id="link" placeholder="Paste Flipkart product link">
+
+<button onclick="fetchPermalink()" id="btn">
+Fetch Review Permalink
+</button>
+
+<div class="result" id="result">
+Permalink will appear here
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

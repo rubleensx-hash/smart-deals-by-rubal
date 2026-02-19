@@ -1,52 +1,51 @@
-async function fetchPermalink(){
+async function findReview(){
 
-const name=document.getElementById("name").value.trim();
-const link=document.getElementById("link").value.trim();
-const result=document.getElementById("result");
-const btn=document.getElementById("btn");
+let name =
+document.getElementById("name").value;
 
-if(!name || !link){
-result.innerHTML="<span class='error'>Enter name and link</span>";
-return;
-}
+let link =
+document.getElementById("link").value;
 
-btn.innerText="Searching...";
-btn.disabled=true;
+let result =
+document.getElementById("result");
 
-try{
+result.innerHTML = "Searching...";
 
-const res=await fetch("/api/find",{
+let response = await fetch("/api/find",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify({
 name:name,
 link:link
 })
+
 });
 
-const data=await res.json();
+let data = await response.json();
 
 if(data.success){
 
-result.innerHTML=
-`<span class="success">Found:</span><br>
-<a href="${data.url}" target="_blank">${data.url}</a>`;
+result.innerHTML = `
+Author: ${data.author}<br>
+Rating: ${data.rating}<br>
+Title: ${data.title}<br><br>
 
-}else{
-
-result.innerHTML="<span class='error'>Review not found</span>";
-
-}
-
-}catch(e){
-
-result.innerHTML="<span class='error'>Server error</span>";
+<a href="${data.url}" target="_blank">
+Open Review
+</a>
+`;
 
 }
+else{
 
-btn.innerText="Fetch Review Permalink";
-btn.disabled=false;
+result.innerHTML =
+data.error;
+
+}
 
 }

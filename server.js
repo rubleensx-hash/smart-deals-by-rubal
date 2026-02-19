@@ -1,72 +1,52 @@
-const express = require("express");
-const puppeteer = require("puppeteer");
-const cors = require("cors");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.static(__dirname));
+const axios = require("axios");
 
 app.post("/fetch-review", async (req, res) => {
-  try {
-    const { productUrl, reviewerName } = req.body;
 
-    if (!productUrl || !reviewerName) {
-      return res.json({ success: false, error: "Missing data" });
-    }
+try {
 
-    const pidMatch = productUrl.match(/pid=([A-Z0-9]+)/i);
+const { name, link } = req.body;
 
-    if (!pidMatch) {
-      return res.json({ success: false, error: "Invalid Flipkart URL" });
-    }
+const pidMatch = link.match(/pid=([A-Z0-9]+)/i);
 
-    const pid = pidMatch[1];
+if (!pidMatch)
+return res.json({success:false,error:"PID not found"});
 
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      headless: true
-    });
+const pid = pidMatch[1];
 
-    const page = await browser.newPage();
+const url =
+`https://www.flipkart.com/api/3/product/reviews?productId=${pid}&page=1`;
 
-    for (let i = 1; i <= 20; i++) {
-      const reviewUrl = `https://www.flipkart.com/reviews/${pid}:${i}`;
+const response = await axios.get(url);
 
-      await page.goto(reviewUrl, {
-        waitUntil: "domcontentloaded",
-        timeout: 15000
-      });
+const reviews =
+response.data.REVIEWS || [];
 
-      const content = await page.content();
+const filtered = reviews.filter(r =>
+r.author.toLowerCase().includes(name.toLowerCase())
+);
 
-      if (content.toLowerCase().includes(reviewerName.toLowerCase())) {
-        await browser.close();
-        return res.json({
-          success: true,
-          permalink: reviewUrl
-        });
-      }
-    }
+if(filtered.length===0)
+return res.json({success:false,error:"No review found"});
 
-    await browser.close();
+const result = filtered.map(r=>({
 
-    res.json({
-      success: false,
-      error: "Review not found"
-    });
+name:r.author,
 
-  } catch (err) {
-    console.log(err);
-    res.json({
-      success: false,
-      error: "Server error"
-    });
-  }
+title:r.title,
+
+permalink:
+`https://www.flipkart.com/reviews/${pid}:${r.reviewId}`
+
+}));
+
+res.json({
+success:true,
+reviews:result
 });
 
-const PORT = process.env.PORT || 10000;
+}
+catch(e){
+res.json({success:false,error:"Server error"});
+}
 
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
 });

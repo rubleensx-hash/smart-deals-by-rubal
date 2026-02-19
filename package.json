@@ -1,7 +1,6 @@
 {
   "name": "smart-deals-by-rubal",
   "version": "1.0.0",
-  "description": "Flipkart Review Finder",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

@@ -8,95 +8,80 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-/*
- API endpoint:
- POST /api/find
- body:
- {
-   name: "reviewer name",
-   link: "flipkart product link"
- }
-*/
-
 app.post("/api/find", async (req, res) => {
 
-try{
+try {
 
 const name = req.body.name.toLowerCase().trim();
-const link = req.body.link.trim();
+const link = req.body.link;
 
 if(!name || !link){
 
 return res.json({
 success:false,
-error:"Missing name or link"
+error:"Missing input"
 });
 
 }
 
-// extract PID
+// extract PID correctly
 let pidMatch = link.match(/pid=([A-Z0-9]+)/);
 
 if(!pidMatch){
 
 return res.json({
 success:false,
-error:"Invalid product link"
+error:"Invalid Flipkart link"
 });
 
 }
 
 const pid = pidMatch[1];
 
-// FAST parallel scan
-const maxScan = 150;
-const concurrency = 10;
+// Flipkart internal review API
+const apiUrl = `https://www.flipkart.com/api/3/product/reviews?pid=${pid}&page=1`;
 
-let foundUrl = null;
+const response = await fetch(apiUrl, {
 
-for(let i=1; i<=maxScan; i+=concurrency){
-
-let batch = [];
-
-for(let j=i; j<i+concurrency && j<=maxScan; j++){
-
-const reviewUrl = `https://www.flipkart.com/reviews/${pid}:${j}`;
-
-batch.push(
-
-fetch(reviewUrl)
-.then(r => r.text())
-.then(text => {
-
-if(foundUrl) return;
-
-if(text.toLowerCase().includes(name)){
-
-foundUrl = reviewUrl;
-
+headers:{
+"User-Agent":"Mozilla/5.0",
+"Accept":"application/json"
 }
 
-})
-.catch(()=>{})
-
-);
-
-}
-
-await Promise.all(batch);
-
-if(foundUrl) break;
-
-}
-
-if(foundUrl){
-
-return res.json({
-success:true,
-url:foundUrl
 });
 
-}else{
+const data = await response.json();
+
+if(!data.REVIEW){
+
+return res.json({
+success:false,
+error:"No reviews found"
+});
+
+}
+
+// scan reviews
+for(let review of data.REVIEW){
+
+let author = review.author.toLowerCase();
+
+if(author.includes(name)){
+
+let reviewId = review.reviewId;
+
+let permalink = `https://www.flipkart.com/reviews/${pid}:${reviewId}`;
+
+return res.json({
+
+success:true,
+url:permalink
+
+});
+
+}
+
+}
 
 return res.json({
 success:false,
@@ -104,8 +89,7 @@ error:"Review not found"
 });
 
 }
-
-}catch(e){
+catch(err){
 
 return res.json({
 success:false,
@@ -116,11 +100,8 @@ error:"Server error"
 
 });
 
-// start server
-const PORT = process.env.PORT || 3000;
+app.listen(process.env.PORT || 3000, ()=>{
 
-app.listen(PORT, ()=>{
-
-console.log("Server running on port", PORT);
+console.log("Server started");
 
 });

@@ -1,36 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
+async function fetchReview() {
 
-<title>Smart Deals by Rubal</title>
+  const name = document.getElementById("name").value;
+  const url = document.getElementById("url").value;
 
-<link rel="stylesheet" href="style.css">
+  const result = document.getElementById("result");
 
-</head>
+  result.innerHTML = "Searching...";
 
-<body>
+  const res = await fetch("/fetch-review", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      productUrl: url,
+      reviewerName: name
+    })
+  });
 
-<div class="card">
+  const data = await res.json();
 
-<h1>SMART DEALS BY RUBAL</h1>
-
-<p>Flipkart Review Finder</p>
-
-<p>Contact: 7006188569</p>
-
-<input id="name" placeholder="Enter reviewer name">
-
-<input id="link" placeholder="Paste Flipkart product link">
-
-<button onclick="findReview()">
-Fetch Review Permalink
-</button>
-
-<div id="result"></div>
-
-</div>
-
-<script src="script.js"></script>
-
-</body>
-</html>
+  if (data.success) {
+    result.innerHTML = `<a href="${data.permalink}" target="_blank">${data.permalink}</a>`;
+  } else {
+    result.innerHTML = data.error;
+  }
+}

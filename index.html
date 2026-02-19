@@ -1,28 +1,213 @@
-async function fetchReview() {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  const name = document.getElementById("name").value;
-  const url = document.getElementById("url").value;
+<title>SMART DEALS BY RUBAL</title>
 
-  const result = document.getElementById("result");
+<style>
 
-  result.innerHTML = "Searching...";
-
-  const res = await fetch("/fetch-review", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      productUrl: url,
-      reviewerName: name
-    })
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    result.innerHTML = `<a href="${data.permalink}" target="_blank">${data.permalink}</a>`;
-  } else {
-    result.innerHTML = data.error;
-  }
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#1e3c43,#2c5364);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+color:white;
 }
+
+.box{
+background:#071c2f;
+padding:30px;
+border-radius:12px;
+width:420px;
+box-shadow:0 0 20px rgba(0,0,0,0.4);
+}
+
+h1{
+text-align:center;
+margin-bottom:5px;
+}
+
+.contact{
+text-align:center;
+color:#00ffd5;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:6px;
+border:none;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:6px;
+background:linear-gradient(90deg,#00ffd5,#00aaff);
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+opacity:0.9;
+}
+
+#result{
+margin-top:20px;
+background:#0d2a44;
+padding:15px;
+border-radius:8px;
+max-height:300px;
+overflow:auto;
+}
+
+a{
+color:#00ffd5;
+text-decoration:none;
+}
+
+.review{
+margin-bottom:15px;
+border-bottom:1px solid #123;
+padding-bottom:10px;
+}
+
+</style>
+
+</head>
+<body>
+
+
+<div class="box">
+
+<h1>SMART DEALS BY RUBAL</h1>
+
+<div class="contact">
+Flipkart Review Finder<br>
+Contact: 7006188569
+</div>
+
+
+<input
+id="name"
+placeholder="Enter review name (first 3 letters)"
+>
+
+<input
+id="link"
+placeholder="Enter Flipkart product link"
+>
+
+
+<button onclick="fetchReview()">
+Fetch Review Permalink
+</button>
+
+
+<div id="result">
+Permalinks will appear here
+</div>
+
+
+</div>
+
+
+
+<script>
+
+async function fetchReview(){
+
+const name=document.getElementById("name").value.trim();
+
+const link=document.getElementById("link").value.trim();
+
+if(!name || !link){
+
+alert("Enter name and link");
+
+return;
+
+}
+
+document.getElementById("result").innerHTML="Fetching...";
+
+
+try{
+
+const res=await fetch("/fetch-review",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+name:name,
+link:link
+})
+
+});
+
+
+const data=await res.json();
+
+
+if(data.success){
+
+let html="";
+
+data.reviews.forEach(r=>{
+
+html+=`
+<div class="review">
+
+<b>Name:</b> ${r.name}<br>
+
+<b>Title:</b> ${r.title}<br>
+
+<a href="${r.permalink}" target="_blank">
+Open Permalink
+</a>
+
+</div>
+`;
+
+});
+
+
+document.getElementById("result").innerHTML=html;
+
+}
+else{
+
+document.getElementById("result").innerHTML=data.error;
+
+}
+
+
+}
+catch(e){
+
+document.getElementById("result").innerHTML="Server error";
+
+}
+
+}
+
+</script>
+
+
+</body>
+</html>

@@ -1,52 +1,103 @@
+const express = require("express");
 const axios = require("axios");
+const cors = require("cors");
 
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname));
+
+
+// Extract PID from Flipkart link
+function getPID(link) {
+
+const match = link.match(/\/p\/(itm[0-9a-zA-Z]+)/);
+
+return match ? match[1] : null;
+
+}
+
+
+// Fetch reviews fast from Flipkart API
 app.post("/fetch-review", async (req, res) => {
 
 try {
 
-const { name, link } = req.body;
+const nameInput = req.body.name.toLowerCase();
 
-const pidMatch = link.match(/pid=([A-Z0-9]+)/i);
+const link = req.body.link;
 
-if (!pidMatch)
-return res.json({success:false,error:"PID not found"});
+const pid = getPID(link);
 
-const pid = pidMatch[1];
+if (!pid)
+return res.json({
+success:false,
+error:"Invalid Flipkart link"
+});
+
 
 const url =
-`https://www.flipkart.com/api/3/product/reviews?productId=${pid}&page=1`;
+`https://www.flipkart.com/api/3/product/reviews?pid=${pid}&page=1`;
 
-const response = await axios.get(url);
 
-const reviews =
-response.data.REVIEWS || [];
+const response = await axios.get(url, {
 
-const filtered = reviews.filter(r =>
-r.author.toLowerCase().includes(name.toLowerCase())
-);
+headers: {
+"User-Agent":"Mozilla/5.0"
+}
 
-if(filtered.length===0)
-return res.json({success:false,error:"No review found"});
+});
 
-const result = filtered.map(r=>({
 
-name:r.author,
+const reviews = response.data.REVIEWS || [];
 
-title:r.title,
+const matched = reviews
+.filter(r =>
+r.author.toLowerCase().includes(nameInput)
+)
+.map(r => ({
+
+name: r.author,
+
+title: r.title,
 
 permalink:
-`https://www.flipkart.com/reviews/${pid}:${r.reviewId}`
+`https://www.flipkart.com/reviews/${r.reviewId}`
 
 }));
 
+
+if (matched.length === 0)
+return res.json({
+success:false,
+error:"Review not found"
+});
+
+
 res.json({
 success:true,
-reviews:result
+reviews:matched
 });
 
 }
-catch(e){
-res.json({success:false,error:"Server error"});
+catch (err) {
+
+console.log(err.message);
+
+res.json({
+success:false,
+error:"Server error"
+});
+
 }
 
+});
+
+
+// Start server
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+console.log("Server running on port", PORT);
 });

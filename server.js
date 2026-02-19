@@ -10,38 +10,28 @@ app.use(express.static(__dirname));
 
 app.post("/api/find", async (req, res) => {
 
-try {
+try{
 
-const name = req.body.name.toLowerCase().trim();
-const link = req.body.link;
+let name = req.body.name.toLowerCase().trim();
+let link = req.body.link;
 
-if(!name || !link){
+let match = link.match(/pid=([A-Z0-9]+)/);
+
+if(!match){
 
 return res.json({
 success:false,
-error:"Missing input"
+error:"Invalid link"
 });
 
 }
 
-// extract PID correctly
-let pidMatch = link.match(/pid=([A-Z0-9]+)/);
+let pid = match[1];
 
-if(!pidMatch){
+let api =
+`https://www.flipkart.com/api/3/product/reviews?pid=${pid}&page=1`;
 
-return res.json({
-success:false,
-error:"Invalid Flipkart link"
-});
-
-}
-
-const pid = pidMatch[1];
-
-// Flipkart internal review API
-const apiUrl = `https://www.flipkart.com/api/3/product/reviews?pid=${pid}&page=1`;
-
-const response = await fetch(apiUrl, {
+let response = await fetch(api,{
 
 headers:{
 "User-Agent":"Mozilla/5.0",
@@ -50,32 +40,37 @@ headers:{
 
 });
 
-const data = await response.json();
+let data = await response.json();
 
-if(!data.REVIEW){
+let reviews = data.REVIEW;
+
+if(!reviews){
 
 return res.json({
 success:false,
-error:"No reviews found"
+error:"No reviews"
 });
 
 }
 
-// scan reviews
-for(let review of data.REVIEW){
+for(let r of reviews){
 
-let author = review.author.toLowerCase();
+let author = r.author.toLowerCase();
 
 if(author.includes(name)){
 
-let reviewId = review.reviewId;
+let reviewId = r.reviewId;
 
-let permalink = `https://www.flipkart.com/reviews/${pid}:${reviewId}`;
+let permalink =
+`https://www.flipkart.com/reviews/${pid}:${reviewId}`;
 
 return res.json({
 
 success:true,
-url:permalink
+url:permalink,
+author:r.author,
+rating:r.rating,
+title:r.title
 
 });
 
@@ -89,7 +84,7 @@ error:"Review not found"
 });
 
 }
-catch(err){
+catch{
 
 return res.json({
 success:false,
@@ -100,8 +95,4 @@ error:"Server error"
 
 });
 
-app.listen(process.env.PORT || 3000, ()=>{
-
-console.log("Server started");
-
-});
+app.listen(process.env.PORT || 3000);

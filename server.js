@@ -1,126 +1,72 @@
 const express = require("express");
+const puppeteer = require("puppeteer");
 const cors = require("cors");
 
-const puppeteer = require("puppeteer-core");
-const chromium = require("@sparticuz/chromium");
-
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
+app.post("/fetch-review", async (req, res) => {
+  try {
+    const { productUrl, reviewerName } = req.body;
 
-app.post("/api/find", async (req, res) => {
+    if (!productUrl || !reviewerName) {
+      return res.json({ success: false, error: "Missing data" });
+    }
 
-try{
+    const pidMatch = productUrl.match(/pid=([A-Z0-9]+)/i);
 
-let name = req.body.name.toLowerCase();
-let link = req.body.link;
+    if (!pidMatch) {
+      return res.json({ success: false, error: "Invalid Flipkart URL" });
+    }
 
-let match = link.match(/pid=([A-Z0-9]+)/);
+    const pid = pidMatch[1];
 
-if(!match){
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: true
+    });
 
-return res.json({
-success:false,
-error:"Invalid product link"
+    const page = await browser.newPage();
+
+    for (let i = 1; i <= 20; i++) {
+      const reviewUrl = `https://www.flipkart.com/reviews/${pid}:${i}`;
+
+      await page.goto(reviewUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: 15000
+      });
+
+      const content = await page.content();
+
+      if (content.toLowerCase().includes(reviewerName.toLowerCase())) {
+        await browser.close();
+        return res.json({
+          success: true,
+          permalink: reviewUrl
+        });
+      }
+    }
+
+    await browser.close();
+
+    res.json({
+      success: false,
+      error: "Review not found"
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      error: "Server error"
+    });
+  }
 });
 
-}
+const PORT = process.env.PORT || 10000;
 
-let pid = match[1];
-
-let browser = await puppeteer.launch({
-
-args:chromium.args,
-
-defaultViewport:chromium.defaultViewport,
-
-executablePath:await chromium.executablePath(),
-
-headless:true
-
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
-
-
-let page = await browser.newPage();
-
-await page.goto(
-`https://www.flipkart.com/product-reviews/${pid}?pid=${pid}`,
-{waitUntil:"networkidle2"}
-);
-
-await page.waitForTimeout(3000);
-
-
-let result = await page.evaluate((name)=>{
-
-let reviews =
-document.querySelectorAll("._27M-vq");
-
-for(let r of reviews){
-
-let author =
-r.querySelector("._2sc7ZR")?.innerText;
-
-let id =
-r.getAttribute("data-review-id");
-
-if(author && id){
-
-if(author.toLowerCase().includes(name)){
-
-return id;
-
-}
-
-}
-
-}
-
-return null;
-
-},name);
-
-
-await browser.close();
-
-
-if(result){
-
-return res.json({
-
-success:true,
-
-url:
-`https://www.flipkart.com/reviews/${pid}:${result}`
-
-});
-
-}else{
-
-return res.json({
-
-success:false,
-error:"Review not found"
-
-});
-
-}
-
-}catch(e){
-
-return res.json({
-
-success:false,
-error:"Server error"
-
-});
-
-}
-
-});
-
-
-app.listen(process.env.PORT || 3000);
